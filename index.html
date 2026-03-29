@@ -270,7 +270,7 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
       <div class="auth-logo-title">기도 바인더</div>
       <div class="auth-logo-sub">PRAYER BINDER</div>
     </div>
-    <div class="auth-tabs">
+    <div class="auth-tabs" id="auth-tab-bar">
       <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">로그인</button>
       <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">회원가입</button>
     </div>
@@ -285,6 +285,9 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
       </div>
       <button class="auth-btn" onclick="doLogin()">로그인</button>
       <div class="auth-msg" id="login-msg"></div>
+      <div style="text-align:center;margin-top:14px;position:relative;z-index:1">
+        <button onclick="switchAuthTab('reset')" style="background:transparent;border:none;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink3);cursor:pointer;text-decoration:underline">비밀번호를 잊으셨나요?</button>
+      </div>
     </div>
     <div id="auth-signup-form" style="display:none">
       <div class="auth-field">
@@ -295,8 +298,23 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
         <label>비밀번호 (6자 이상)</label>
         <input type="password" id="signup-pw" placeholder="비밀번호">
       </div>
+      <div class="auth-field">
+        <label>비밀번호 확인</label>
+        <input type="password" id="signup-pw2" placeholder="비밀번호 재입력">
+      </div>
       <button class="auth-btn" onclick="doSignup()">회원가입</button>
       <div class="auth-msg" id="signup-msg"></div>
+    </div>
+    <div id="auth-reset-form" style="display:none">
+      <div class="auth-field">
+        <label>가입한 이메일</label>
+        <input type="email" id="reset-email" placeholder="email@example.com">
+      </div>
+      <button class="auth-btn" onclick="doReset()">비밀번호 재설정 메일 보내기</button>
+      <div class="auth-msg" id="reset-msg"></div>
+      <div style="text-align:center;margin-top:14px;position:relative;z-index:1">
+        <button onclick="switchAuthTab('login')" style="background:transparent;border:none;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink3);cursor:pointer;text-decoration:underline">← 로그인으로 돌아가기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -467,8 +485,11 @@ function showApp(){
 function switchAuthTab(t){
   document.getElementById('auth-login-form').style.display  = t==='login'  ? '' : 'none';
   document.getElementById('auth-signup-form').style.display = t==='signup' ? '' : 'none';
+  document.getElementById('auth-reset-form').style.display  = t==='reset'  ? '' : 'none';
   document.getElementById('tab-login').classList.toggle('active',  t==='login');
   document.getElementById('tab-signup').classList.toggle('active', t==='signup');
+  // 비밀번호 찾기일 때 탭바 숨기기
+  document.getElementById('auth-tab-bar').style.display = t==='reset' ? 'none' : '';
 }
 
 // ── AUTH ACTIONS ──
@@ -484,11 +505,26 @@ async function doLogin(){
 async function doSignup(){
   const email=document.getElementById('signup-email').value.trim();
   const pw=document.getElementById('signup-pw').value;
+  const pw2=document.getElementById('signup-pw2').value;
   const msg=document.getElementById('signup-msg');
+  if(!email){ msg.textContent='이메일을 입력해주세요.'; msg.className='auth-msg error'; return; }
+  if(pw.length<6){ msg.textContent='비밀번호는 6자 이상이어야 해요.'; msg.className='auth-msg error'; return; }
+  if(pw!==pw2){ msg.textContent='비밀번호가 일치하지 않아요.'; msg.className='auth-msg error'; return; }
   msg.textContent='가입 중...'; msg.className='auth-msg';
   const {error}=await sb.auth.signUp({email,password:pw});
   if(error){ msg.textContent=error.message; msg.className='auth-msg error'; }
   else{ msg.textContent='✅ 가입 완료! 이메일을 확인해주세요.'; msg.className='auth-msg success'; }
+}
+async function doReset(){
+  const email=document.getElementById('reset-email').value.trim();
+  const msg=document.getElementById('reset-msg');
+  if(!email){ msg.textContent='이메일을 입력해주세요.'; msg.className='auth-msg error'; return; }
+  msg.textContent='전송 중...'; msg.className='auth-msg';
+  const {error}=await sb.auth.resetPasswordForEmail(email,{
+    redirectTo: window.location.origin+window.location.pathname
+  });
+  if(error){ msg.textContent=error.message; msg.className='auth-msg error'; }
+  else{ msg.textContent='✅ 재설정 메일을 보냈어요! 이메일을 확인해주세요.'; msg.className='auth-msg success'; }
 }
 async function doLogout(){
   await sb.auth.signOut();
@@ -828,6 +864,8 @@ document.getElementById('login-email').addEventListener('keydown',e=>{ if(e.key=
 document.getElementById('login-pw').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
 document.getElementById('signup-email').addEventListener('keydown',e=>{ if(e.key==='Enter') doSignup(); });
 document.getElementById('signup-pw').addEventListener('keydown',e=>{ if(e.key==='Enter') doSignup(); });
+document.getElementById('signup-pw2').addEventListener('keydown',e=>{ if(e.key==='Enter') doSignup(); });
+document.getElementById('reset-email').addEventListener('keydown',e=>{ if(e.key==='Enter') doReset(); });
 
 // ── INIT ──
 sb.auth.onAuthStateChange(async(event, session)=>{

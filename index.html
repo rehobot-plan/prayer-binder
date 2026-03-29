@@ -5,88 +5,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>기도 바인더</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --paper:#F7F3EC; --paper2:#EDE8DF; --paper3:#E3DDCF;
-  --ink:#1E1A14; --ink2:#4A4438; --ink3:#8A8070; --rule:#D8D0C0;
-  --bg:#2A2520;
+  --ink:#1E1A14; --ink2:#4A4438; --ink3:#8A8070; --rule:#D8D0C0; --bg:#2A2520;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh;}
 
-/* ── AUTH SCREEN ── */
-#auth-screen {
-  min-height:100vh; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; padding:24px;
-}
-.auth-card {
-  background:var(--paper); border-radius:20px; padding:40px 32px;
-  width:100%; max-width:380px;
-  box-shadow:0 24px 60px rgba(0,0,0,0.4); border:1px solid var(--rule);
-  position:relative; overflow:hidden;
-}
-.auth-card::before {
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background-image:repeating-linear-gradient(to bottom,transparent,transparent 31px,rgba(180,160,130,.15) 31px,rgba(180,160,130,.15) 32px);
-}
-.auth-logo {
-  text-align:center; margin-bottom:28px; position:relative; z-index:1;
-}
-.auth-logo-icon { font-size:32px; margin-bottom:8px; }
-.auth-logo-title {
-  font-size:18px; font-weight:700; color:var(--ink);
-  letter-spacing:0.15em;
-}
-.auth-logo-sub { font-size:11px; color:var(--ink3); margin-top:4px; letter-spacing:0.1em; }
-.auth-tabs {
-  display:flex; background:var(--paper2); border-radius:10px;
-  padding:3px; margin-bottom:24px; position:relative; z-index:1;
-}
-.auth-tab {
-  flex:1; padding:8px; border:none; background:transparent;
-  font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600;
-  color:var(--ink3); cursor:pointer; border-radius:8px; transition:all .18s;
-}
-.auth-tab.active { background:#fff; color:var(--ink); box-shadow:0 1px 4px rgba(0,0,0,.12); }
-.auth-field { margin-bottom:14px; position:relative; z-index:1; }
-.auth-field label { display:block; font-size:11px; font-weight:700; color:var(--ink3); letter-spacing:0.1em; margin-bottom:6px; }
-.auth-field input {
-  width:100%; padding:11px 14px; background:#fff; border:1.5px solid var(--rule);
-  border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:14px;
-  color:var(--ink); outline:none; transition:border-color .15s;
-}
-.auth-field input:focus { border-color:var(--ink2); }
-.auth-btn {
-  width:100%; padding:13px; background:var(--ink); color:var(--paper);
-  border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif;
-  font-size:14px; font-weight:700; cursor:pointer; transition:opacity .15s;
-  position:relative; z-index:1; margin-top:6px;
-}
-.auth-btn:hover { opacity:.85; }
-.auth-msg { font-size:12px; text-align:center; margin-top:12px; min-height:18px; position:relative; z-index:1; }
-.auth-msg.error { color:#C0725A; }
-.auth-msg.success { color:#5A8C6A; }
+/* LOADING */
+#loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
+  justify-content:center;z-index:9999;flex-direction:column;gap:12px;}
+#loading-screen.hidden{display:none;}
+.loading-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.15);
+  border-top-color:#9A8F7A;border-radius:50%;animation:spin .8s linear infinite;}
+.loading-text{font-size:12px;color:#9A8F7A;letter-spacing:0.1em;}
 
-/* ── APP SCREEN ── */
-#app-screen {
-  display:none; flex-direction:column; align-items:center;
-  padding:40px 16px 60px;
-}
-#app-screen.visible { display:flex; }
+/* AUTH */
+#auth-screen{min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+.auth-card{background:var(--paper);border-radius:20px;padding:40px 32px;width:100%;max-width:360px;
+  box-shadow:0 24px 60px rgba(0,0,0,.4);border:1px solid var(--rule);position:relative;overflow:hidden;}
+.auth-card::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:repeating-linear-gradient(to bottom,transparent,transparent 31px,rgba(180,160,130,.15) 31px,rgba(180,160,130,.15) 32px);}
+.auth-logo{text-align:center;margin-bottom:28px;position:relative;z-index:1;}
+.auth-logo-icon{font-size:36px;margin-bottom:8px;}
+.auth-logo-title{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:0.15em;}
+.auth-logo-sub{font-size:11px;color:var(--ink3);margin-top:4px;letter-spacing:0.12em;}
+.google-btn{width:100%;padding:13px;background:#fff;color:#3c4043;border:1.5px solid var(--rule);
+  border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:box-shadow .2s;position:relative;z-index:1;}
+.google-btn:hover{box-shadow:0 2px 12px rgba(0,0,0,.15);}
+.google-icon{width:20px;height:20px;}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:18px 0;position:relative;z-index:1;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--rule);}
+.auth-divider span{font-size:11px;color:var(--ink3);}
+.auth-field{margin-bottom:13px;position:relative;z-index:1;}
+.auth-field label{display:block;font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:0.1em;margin-bottom:5px;}
+.auth-field input{width:100%;padding:10px 13px;background:#fff;border:1.5px solid var(--rule);
+  border-radius:10px;font-family:'Noto Sans KR',sans-serif;font-size:14px;color:var(--ink);
+  outline:none;transition:border-color .15s;}
+.auth-field input:focus{border-color:var(--ink2);}
+.auth-tabs{display:flex;background:var(--paper2);border-radius:10px;padding:3px;margin-bottom:18px;position:relative;z-index:1;}
+.auth-tab{flex:1;padding:7px;border:none;background:transparent;font-family:'Noto Sans KR',sans-serif;
+  font-size:13px;font-weight:600;color:var(--ink3);cursor:pointer;border-radius:8px;transition:all .18s;}
+.auth-tab.active{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12);}
+.auth-btn{width:100%;padding:12px;background:var(--ink);color:var(--paper);border:none;border-radius:10px;
+  font-family:'Noto Sans KR',sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+  transition:opacity .15s;position:relative;z-index:1;margin-top:4px;}
+.auth-btn:hover{opacity:.85;}
+.auth-msg{font-size:12px;text-align:center;margin-top:10px;min-height:18px;position:relative;z-index:1;}
+.auth-msg.error{color:#C0725A;}
+.auth-msg.success{color:#5A8C6A;}
+.auth-link{background:transparent;border:none;font-family:'Noto Sans KR',sans-serif;font-size:12px;
+  color:var(--ink3);cursor:pointer;text-decoration:underline;display:block;text-align:center;
+  margin-top:12px;position:relative;z-index:1;}
 
-/* TOP BAR */
-.top-bar {
-  width:100%; max-width:580px; display:flex;
-  align-items:center; justify-content:space-between; margin-bottom:20px;
-}
-.user-info { font-size:11px; color:#9A8F7A; letter-spacing:0.05em; }
-.logout-btn {
-  font-size:11px; color:#9A8F7A; background:transparent; border:1px solid rgba(255,255,255,.15);
-  padding:4px 12px; border-radius:99px; cursor:pointer; font-family:'Noto Sans KR',sans-serif;
-  transition:all .15s;
-}
-.logout-btn:hover { color:#fff; border-color:rgba(255,255,255,.4); }
+/* APP */
+#app-screen{display:none;flex-direction:column;align-items:center;padding:40px 16px 60px;}
+#app-screen.visible{display:flex;}
+.top-bar{width:100%;max-width:580px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.user-info{display:flex;align-items:center;gap:8px;}
+.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);}
+.user-name{font-size:12px;color:#9A8F7A;}
+.logout-btn{font-size:11px;color:#9A8F7A;background:transparent;border:1px solid rgba(255,255,255,.15);
+  padding:4px 12px;border-radius:99px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.logout-btn:hover{color:#fff;border-color:rgba(255,255,255,.4);}
 
 /* TITLE */
 .binder-title-wrap{display:flex;justify-content:center;margin-bottom:20px;width:100%;max-width:580px;}
@@ -98,8 +82,7 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
 .binder{width:100%;max-width:580px;position:relative;}
 .rings{position:absolute;left:-18px;top:80px;bottom:20px;width:18px;
   display:flex;flex-direction:column;justify-content:space-around;padding:20px 0;z-index:20;}
-.ring{width:16px;height:16px;border-radius:50%;background:#1A1510;
-  border:2px solid #3A3028;box-shadow:inset 0 1px 3px rgba(0,0,0,.5);}
+.ring{width:16px;height:16px;border-radius:50%;background:#1A1510;border:2px solid #3A3028;box-shadow:inset 0 1px 3px rgba(0,0,0,.5);}
 
 /* L1 TABS */
 .tabs-l1{display:flex;flex-wrap:wrap;padding-left:12px;position:relative;z-index:10;}
@@ -114,7 +97,7 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
   border-bottom:none!important;border-radius:10px 10px 0 0!important;bottom:-2px!important;position:relative!important;}
 .tab-add:hover{background:rgba(255,255,255,.28)!important;border-color:rgba(255,255,255,.9)!important;}
 
-/* PAGE STACK */
+/* PAGE */
 .page-stack{position:relative;}
 .page-shadow{position:absolute;left:4px;right:-4px;top:4px;bottom:-4px;background:var(--paper3);border-radius:0 4px 4px 0;}
 .page-shadow2{position:absolute;left:8px;right:-8px;top:8px;bottom:-8px;background:var(--paper2);border-radius:0 4px 4px 0;opacity:.6;}
@@ -124,8 +107,6 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
 .page::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background-image:repeating-linear-gradient(to bottom,transparent,transparent 31px,rgba(180,160,130,.18) 31px,rgba(180,160,130,.18) 32px);}
 .page::after{content:'';position:absolute;left:24px;top:0;bottom:0;width:1px;background:rgba(200,100,80,.22);pointer-events:none;}
-
-/* PAGE HEADER */
 .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;position:relative;z-index:1;}
 .page-cat-label{font-size:18px;font-weight:900;}
 .page-meta{font-size:11px;color:var(--ink3);letter-spacing:.1em;}
@@ -137,8 +118,7 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
 .tab-l2:not(.active){background:var(--paper2);color:var(--ink3);border-color:var(--rule);}
 .tab-l2:not(.active):hover{border-color:var(--ink3);color:var(--ink2);}
 .tab-l2.active{color:#fff;}
-.tab-l2-add{background:transparent!important;color:var(--ink3)!important;
-  border:1.5px dashed var(--rule)!important;font-size:13px!important;padding:4px 12px!important;}
+.tab-l2-add{background:transparent!important;color:var(--ink3)!important;border:1.5px dashed var(--rule)!important;font-size:13px!important;padding:4px 12px!important;}
 .tab-l2-add:hover{border-color:var(--ink3)!important;color:var(--ink2)!important;}
 
 /* ENTRIES */
@@ -160,47 +140,32 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
 .entry-date{font-size:10px;color:var(--ink3);margin-top:2px;}
 .entry-actions{display:flex;gap:2px;flex-shrink:0;opacity:0;transition:opacity .15s;}
 .entry:hover .entry-actions{opacity:1;}
-.eact{background:transparent;border:none;font-size:13px;cursor:pointer;
-  color:var(--ink3);padding:3px 5px;border-radius:5px;transition:background .12s,color .12s;}
+.eact{background:transparent;border:none;font-size:13px;cursor:pointer;color:var(--ink3);padding:3px 5px;border-radius:5px;transition:background .12s,color .12s;}
 .eact:hover{background:var(--paper2);color:var(--ink);}
-
-/* ADD ROW */
 .add-row{margin-top:14px;position:relative;z-index:1;}
-.add-inline{display:flex;align-items:center;gap:10px;padding:7px 8px;
-  border-radius:8px;border:1.5px dashed var(--rule);transition:border-color .15s;}
+.add-inline{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;border:1.5px dashed var(--rule);transition:border-color .15s;}
 .add-inline:hover{border-color:var(--ink3);}
-.add-inline input{flex:1;background:transparent;border:none;outline:none;
-  font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);}
+.add-inline input{flex:1;background:transparent;border:none;outline:none;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);}
 .add-inline input::placeholder{color:var(--ink3);}
-.add-inline-btn{padding:4px 12px;border-radius:6px;border:none;
-  font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;
-  cursor:pointer;color:#fff;transition:opacity .15s;}
+.add-inline-btn{padding:4px 12px;border-radius:6px;border:none;font-family:'Noto Sans KR',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#fff;transition:opacity .15s;}
 .add-inline-btn:hover{opacity:.85;}
-
-/* PAGE FOOTER */
 .page-footer{position:relative;z-index:1;margin-top:16px;display:flex;align-items:center;justify-content:space-between;}
 .answered-count{font-size:11px;color:var(--ink3);}
 .answered-count span{font-weight:700;}
-
-/* BOTTOM BAR */
-.bottom-bar{margin-top:28px;display:flex;align-items:center;justify-content:center;
-  gap:20px;font-size:11px;color:#6A6050;letter-spacing:.1em;}
+.bottom-bar{margin-top:28px;display:flex;align-items:center;justify-content:center;gap:20px;font-size:11px;color:#6A6050;letter-spacing:.1em;}
 .bottom-bar span{color:#9A8F7A;}
 
 /* OVERLAYS */
-.overlay{display:none;position:fixed;inset:0;background:rgba(20,15,10,.62);
-  backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(20,15,10,.62);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;}
 .overlay.open{display:flex;}
-.modal-card{background:var(--paper);border-radius:16px;padding:26px 22px;
-  max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.5);
-  border:1px solid var(--rule);position:relative;animation:popIn .2s ease;}
+.modal-card{background:var(--paper);border-radius:16px;padding:26px 22px;max-width:92vw;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);border:1px solid var(--rule);position:relative;animation:popIn .2s ease;}
 .modal-card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background-image:repeating-linear-gradient(to bottom,transparent,transparent 31px,rgba(180,160,130,.13) 31px,rgba(180,160,130,.13) 32px);}
-.modal-card h3{font-size:14px;font-weight:700;color:var(--ink3);margin-bottom:14px;
-  text-align:center;letter-spacing:.08em;position:relative;z-index:1;}
-.modal-input{width:100%;background:transparent;border:none;border-bottom:2px solid var(--rule);
-  outline:none;font-family:'Noto Sans KR',sans-serif;font-size:18px;font-weight:700;
-  color:var(--ink);padding:6px 2px 10px;text-align:center;position:relative;z-index:1;display:block;}
+.modal-card h3{font-size:14px;font-weight:700;color:var(--ink3);margin-bottom:14px;text-align:center;letter-spacing:.08em;position:relative;z-index:1;}
+.modal-input{width:100%;background:transparent;border:none;border-bottom:2px solid var(--rule);outline:none;
+  font-family:'Noto Sans KR',sans-serif;font-size:18px;font-weight:700;color:var(--ink);
+  padding:6px 2px 10px;text-align:center;position:relative;z-index:1;display:block;}
 .modal-input:focus{border-bottom-color:var(--ink2);}
 .modal-hint{font-size:11px;color:var(--ink3);text-align:center;margin-top:8px;position:relative;z-index:1;}
 .modal-error{color:#C0725A;font-size:11px;text-align:center;margin-top:6px;min-height:16px;position:relative;z-index:1;}
@@ -210,48 +175,28 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
 .mbtn-save{background:var(--ink);color:var(--paper);}
 .mbtn-save:hover{opacity:.85;}
 .mbtn-danger{background:#C0725A;color:#fff;}
-.mbtn-danger:hover{opacity:.85;}
-
-/* CTX MENU */
-.ctx-menu{display:none;position:fixed;background:var(--paper);border:1px solid var(--rule);
-  border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:500;
-  overflow:hidden;min-width:160px;animation:popIn .15s ease;}
+.ctx-menu{display:none;position:fixed;background:var(--paper);border:1px solid var(--rule);border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.35);z-index:500;overflow:hidden;min-width:160px;animation:popIn .15s ease;}
 .ctx-menu.open{display:block;}
-.ctx-item{display:block;width:100%;padding:12px 18px;background:transparent;border:none;
-  text-align:left;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;
-  color:var(--ink);cursor:pointer;transition:background .12s;}
+.ctx-item{display:block;width:100%;padding:12px 18px;background:transparent;border:none;text-align:left;
+  font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;transition:background .12s;}
 .ctx-item:hover{background:var(--paper2);}
 .ctx-sep{height:1px;background:var(--rule);margin:2px 0;}
 .ctx-danger{color:#C0725A;}
 .ctx-danger:hover{background:#FDF0ED!important;}
 .delete-icon{font-size:28px;margin-bottom:10px;text-align:center;position:relative;z-index:1;}
 .delete-desc{font-size:12px;color:var(--ink3);line-height:1.7;text-align:center;position:relative;z-index:1;white-space:pre-line;}
-
-/* MEMO */
-.memo-card{background:var(--paper);border-radius:14px;padding:26px;width:360px;
-  max-width:95vw;box-shadow:0 24px 60px rgba(0,0,0,.5);border:1px solid var(--rule);
-  animation:popIn .2s ease;position:relative;}
+.memo-card{background:var(--paper);border-radius:14px;padding:26px;width:360px;max-width:95vw;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);border:1px solid var(--rule);animation:popIn .2s ease;position:relative;}
 .memo-card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
   background-image:repeating-linear-gradient(to bottom,transparent,transparent 31px,rgba(180,160,130,.13) 31px,rgba(180,160,130,.13) 32px);}
 .memo-card h3{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:14px;position:relative;z-index:1;}
-.memo-card textarea{width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--rule);
-  outline:none;font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);
-  resize:none;min-height:90px;line-height:1.7;position:relative;z-index:1;padding-bottom:4px;}
-
-/* LOADING */
-#loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;
-  justify-content:center;z-index:9999;flex-direction:column;gap:12px;}
-#loading-screen.hidden{display:none;}
-.loading-spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,.15);
-  border-top-color:#9A8F7A;border-radius:50%;animation:spin .8s linear infinite;}
-.loading-text{font-size:12px;color:#9A8F7A;letter-spacing:0.1em;}
+.memo-card textarea{width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--rule);outline:none;
+  font-family:'Noto Sans KR',sans-serif;font-size:13px;color:var(--ink);resize:none;min-height:90px;line-height:1.7;position:relative;z-index:1;padding-bottom:4px;}
 
 @keyframes spin{to{transform:rotate(360deg);}}
 @keyframes popIn{from{opacity:0;transform:scale(.94) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
-@media(max-width:480px){
-  .tabs-l1{padding-left:8px;} .tab-l1{padding:7px 12px 11px;font-size:12px;}
-  .page{padding:18px 14px 16px 22px;} .rings{display:none;}
-}
+@media(max-width:480px){.tabs-l1{padding-left:8px;}.tab-l1{padding:7px 12px 11px;font-size:12px;}.page{padding:18px 14px 16px 22px;}.rings{display:none;}}
 </style>
 </head>
 <body>
@@ -262,77 +207,76 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
   <div class="loading-text">불러오는 중...</div>
 </div>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen" style="display:none">
+<!-- AUTH -->
+<div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">
       <div class="auth-logo-icon">🙏</div>
       <div class="auth-logo-title">기도 바인더</div>
       <div class="auth-logo-sub">PRAYER BINDER</div>
     </div>
-    <div class="auth-tabs" id="auth-tab-bar">
-      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">로그인</button>
-      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">회원가입</button>
+
+    <!-- Google 로그인 -->
+    <button class="google-btn" onclick="doGoogleLogin()">
+      <svg class="google-icon" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Google 계정으로 로그인
+    </button>
+
+    <div class="auth-divider"><span>또는</span></div>
+
+    <!-- 이메일 탭 -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">로그인</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">회원가입</button>
     </div>
-    <div id="auth-login-form">
-      <div class="auth-field">
-        <label>이메일</label>
-        <input type="email" id="login-email" placeholder="email@example.com">
-      </div>
-      <div class="auth-field">
-        <label>비밀번호</label>
-        <input type="password" id="login-pw" placeholder="비밀번호">
-      </div>
-      <button class="auth-btn" onclick="doLogin()">로그인</button>
+
+    <!-- 로그인 폼 -->
+    <div id="form-login">
+      <div class="auth-field"><label>이메일</label><input type="email" id="login-email" placeholder="email@example.com"></div>
+      <div class="auth-field"><label>비밀번호</label><input type="password" id="login-pw" placeholder="비밀번호"></div>
+      <button class="auth-btn" onclick="doEmailLogin()">로그인</button>
       <div class="auth-msg" id="login-msg"></div>
-      <div style="text-align:center;margin-top:14px;position:relative;z-index:1">
-        <button onclick="switchAuthTab('reset')" style="background:transparent;border:none;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink3);cursor:pointer;text-decoration:underline">비밀번호를 잊으셨나요?</button>
-      </div>
+      <button class="auth-link" onclick="switchTab('reset')">비밀번호를 잊으셨나요?</button>
     </div>
-    <div id="auth-signup-form" style="display:none">
-      <div class="auth-field">
-        <label>이메일</label>
-        <input type="email" id="signup-email" placeholder="email@example.com">
-      </div>
-      <div class="auth-field">
-        <label>비밀번호 (6자 이상)</label>
-        <input type="password" id="signup-pw" placeholder="비밀번호">
-      </div>
-      <div class="auth-field">
-        <label>비밀번호 확인</label>
-        <input type="password" id="signup-pw2" placeholder="비밀번호 재입력">
-      </div>
+
+    <!-- 회원가입 폼 -->
+    <div id="form-signup" style="display:none">
+      <div class="auth-field"><label>이메일</label><input type="email" id="signup-email" placeholder="email@example.com"></div>
+      <div class="auth-field"><label>비밀번호 (6자 이상)</label><input type="password" id="signup-pw" placeholder="비밀번호"></div>
+      <div class="auth-field"><label>비밀번호 확인</label><input type="password" id="signup-pw2" placeholder="비밀번호 재입력"></div>
       <button class="auth-btn" onclick="doSignup()">회원가입</button>
       <div class="auth-msg" id="signup-msg"></div>
     </div>
-    <div id="auth-reset-form" style="display:none">
-      <div class="auth-field">
-        <label>가입한 이메일</label>
-        <input type="email" id="reset-email" placeholder="email@example.com">
-      </div>
-      <button class="auth-btn" onclick="doReset()">비밀번호 재설정 메일 보내기</button>
+
+    <!-- 비밀번호 재설정 -->
+    <div id="form-reset" style="display:none">
+      <div class="auth-field"><label>가입한 이메일</label><input type="email" id="reset-email" placeholder="email@example.com"></div>
+      <button class="auth-btn" onclick="doReset()">재설정 메일 보내기</button>
       <div class="auth-msg" id="reset-msg"></div>
-      <div style="text-align:center;margin-top:14px;position:relative;z-index:1">
-        <button onclick="switchAuthTab('login')" style="background:transparent;border:none;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink3);cursor:pointer;text-decoration:underline">← 로그인으로 돌아가기</button>
-      </div>
+      <button class="auth-link" onclick="switchTab('login')">← 로그인으로 돌아가기</button>
     </div>
   </div>
 </div>
 
-<!-- APP SCREEN -->
+<!-- APP -->
 <div id="app-screen">
   <div class="top-bar">
-    <div class="user-info" id="user-email-display"></div>
+    <div class="user-info">
+      <img class="user-avatar" id="user-avatar" src="" style="display:none">
+      <span class="user-name" id="user-name"></span>
+    </div>
     <button class="logout-btn" onclick="doLogout()">로그아웃</button>
   </div>
   <div class="binder-title-wrap">
     <div class="binder-title" id="binder-title-el" onclick="openModal('title-edit')">✦ 나의 기도 바인더 ✦</div>
   </div>
   <div class="binder">
-    <div class="rings">
-      <div class="ring"></div><div class="ring"></div><div class="ring"></div>
-      <div class="ring"></div><div class="ring"></div>
-    </div>
+    <div class="rings"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>
     <div class="tabs-l1" id="tabs-l1"></div>
     <div class="page-stack">
       <div class="page-shadow2"></div><div class="page-shadow"></div>
@@ -375,134 +319,121 @@ body{background:var(--bg);font-family:'Noto Sans KR',sans-serif;min-height:100vh
 </div>
 
 <!-- MODALS -->
-<div class="overlay" id="ov-title-edit" style="z-index:300">
-  <div class="modal-card" style="width:340px">
-    <h3>바인더 제목 변경</h3>
-    <input class="modal-input" id="inp-title" maxlength="30" placeholder="바인더 이름">
-    <div class="modal-hint">Enter로 저장 · ESC로 취소</div>
-    <div class="modal-btns">
-      <button class="mbtn mbtn-cancel" onclick="closeModal('title-edit')">취소</button>
-      <button class="mbtn mbtn-save" onclick="saveTitle()">저장</button>
-    </div>
+<div class="overlay" id="ov-title-edit" style="z-index:300"><div class="modal-card" style="width:340px">
+  <h3>바인더 제목 변경</h3>
+  <input class="modal-input" id="inp-title" maxlength="30" placeholder="바인더 이름">
+  <div class="modal-hint">Enter로 저장 · ESC로 취소</div>
+  <div class="modal-btns"><button class="mbtn mbtn-cancel" onclick="closeModal('title-edit')">취소</button><button class="mbtn mbtn-save" onclick="saveTitle()">저장</button></div>
+</div></div>
+<div class="overlay" id="ov-l1-add" style="z-index:400"><div class="modal-card" style="width:300px">
+  <h3>새 탭 추가</h3>
+  <input class="modal-input" id="inp-l1-add" maxlength="12" placeholder="탭 이름">
+  <div class="modal-error" id="err-l1-add"></div>
+  <div class="modal-btns"><button class="mbtn mbtn-cancel" onclick="closeModal('l1-add')">취소</button><button class="mbtn mbtn-save" onclick="confirmL1Add()">추가</button></div>
+</div></div>
+<div class="overlay" id="ov-l1-rename" style="z-index:400"><div class="modal-card" style="width:300px">
+  <h3>탭 이름 변경</h3>
+  <input class="modal-input" id="inp-l1-rename" maxlength="12" placeholder="새 이름">
+  <div class="modal-btns"><button class="mbtn mbtn-cancel" onclick="closeModal('l1-rename')">취소</button><button class="mbtn mbtn-save" onclick="confirmL1Rename()">저장</button></div>
+</div></div>
+<div class="overlay" id="ov-l2-add" style="z-index:400"><div class="modal-card" style="width:300px">
+  <h3>새 소탭 추가</h3>
+  <input class="modal-input" id="inp-l2-add" maxlength="12" placeholder="소탭 이름">
+  <div class="modal-error" id="err-l2-add"></div>
+  <div class="modal-btns"><button class="mbtn mbtn-cancel" onclick="closeModal('l2-add')">취소</button><button class="mbtn mbtn-save" onclick="confirmL2Add()">추가</button></div>
+</div></div>
+<div class="overlay" id="ov-l2-rename" style="z-index:400"><div class="modal-card" style="width:300px">
+  <h3>소탭 이름 변경</h3>
+  <input class="modal-input" id="inp-l2-rename" maxlength="12" placeholder="새 이름">
+  <div class="modal-btns"><button class="mbtn mbtn-cancel" onclick="closeModal('l2-rename')">취소</button><button class="mbtn mbtn-save" onclick="confirmL2Rename()">저장</button></div>
+</div></div>
+<div class="overlay" id="ov-delete" style="z-index:450"><div class="modal-card" style="width:300px">
+  <div class="delete-icon">🗑️</div>
+  <h3 id="del-title"></h3>
+  <div class="delete-desc" id="del-desc"></div>
+  <div class="modal-btns"><button class="mbtn mbtn-cancel" onclick="closeModal('delete')">취소</button><button class="mbtn mbtn-danger" onclick="execDelete()">삭제</button></div>
+</div></div>
+<div class="overlay" id="ov-memo" style="z-index:300"><div class="memo-card">
+  <h3 id="memo-label"></h3>
+  <textarea id="memo-ta" placeholder="기도하며 느낀 것, 말씀, 마음을 기록하세요…"></textarea>
+  <div class="modal-btns" style="margin-top:16px;position:relative;z-index:1">
+    <button class="mbtn mbtn-cancel" onclick="closeModal('memo')">취소</button>
+    <button class="mbtn mbtn-save" onclick="saveMemo()">저장</button>
   </div>
-</div>
-<div class="overlay" id="ov-l1-add" style="z-index:400">
-  <div class="modal-card" style="width:300px">
-    <h3>새 탭 추가</h3>
-    <input class="modal-input" id="inp-l1-add" maxlength="12" placeholder="탭 이름">
-    <div class="modal-error" id="err-l1-add"></div>
-    <div class="modal-btns">
-      <button class="mbtn mbtn-cancel" onclick="closeModal('l1-add')">취소</button>
-      <button class="mbtn mbtn-save" onclick="confirmL1Add()">추가</button>
-    </div>
-  </div>
-</div>
-<div class="overlay" id="ov-l1-rename" style="z-index:400">
-  <div class="modal-card" style="width:300px">
-    <h3>탭 이름 변경</h3>
-    <input class="modal-input" id="inp-l1-rename" maxlength="12" placeholder="새 이름">
-    <div class="modal-btns">
-      <button class="mbtn mbtn-cancel" onclick="closeModal('l1-rename')">취소</button>
-      <button class="mbtn mbtn-save" onclick="confirmL1Rename()">저장</button>
-    </div>
-  </div>
-</div>
-<div class="overlay" id="ov-l2-add" style="z-index:400">
-  <div class="modal-card" style="width:300px">
-    <h3>새 소탭 추가</h3>
-    <input class="modal-input" id="inp-l2-add" maxlength="12" placeholder="소탭 이름">
-    <div class="modal-error" id="err-l2-add"></div>
-    <div class="modal-btns">
-      <button class="mbtn mbtn-cancel" onclick="closeModal('l2-add')">취소</button>
-      <button class="mbtn mbtn-save" onclick="confirmL2Add()">추가</button>
-    </div>
-  </div>
-</div>
-<div class="overlay" id="ov-l2-rename" style="z-index:400">
-  <div class="modal-card" style="width:300px">
-    <h3>소탭 이름 변경</h3>
-    <input class="modal-input" id="inp-l2-rename" maxlength="12" placeholder="새 이름">
-    <div class="modal-btns">
-      <button class="mbtn mbtn-cancel" onclick="closeModal('l2-rename')">취소</button>
-      <button class="mbtn mbtn-save" onclick="confirmL2Rename()">저장</button>
-    </div>
-  </div>
-</div>
-<div class="overlay" id="ov-delete" style="z-index:450">
-  <div class="modal-card" style="width:300px">
-    <div class="delete-icon">🗑️</div>
-    <h3 id="del-title"></h3>
-    <div class="delete-desc" id="del-desc"></div>
-    <div class="modal-btns">
-      <button class="mbtn mbtn-cancel" onclick="closeModal('delete')">취소</button>
-      <button class="mbtn mbtn-danger" onclick="execDelete()">삭제</button>
-    </div>
-  </div>
-</div>
-<div class="overlay" id="ov-memo" style="z-index:300">
-  <div class="memo-card">
-    <h3 id="memo-label"></h3>
-    <textarea id="memo-ta" placeholder="기도하며 느낀 것, 말씀, 마음을 기록하세요…"></textarea>
-    <div class="modal-btns" style="margin-top:16px;position:relative;z-index:1">
-      <button class="mbtn mbtn-cancel" onclick="closeModal('memo')">취소</button>
-      <button class="mbtn mbtn-save" onclick="saveMemo()">저장</button>
-    </div>
-  </div>
-</div>
+</div></div>
 
-<script>
-// ══════════════════════════════════════
-// ⚠️ 여기에 Supabase 키를 넣으세요
-const SUPABASE_URL  = 'https://ojswsfscshcyczztuwia.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qc3dzZnNjc2hjeWN6enR1d2lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3NzU3ODQsImV4cCI6MjA5MDM1MTc4NH0.lNJz5bNgpzdomQYhYmxRaV4XnJxSHqZeP8jDhopi614';
-// ══════════════════════════════════════
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc,
+  updateDoc, deleteDoc, query, where, orderBy }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+const firebaseConfig = {
+  apiKey: "AIzaSyCGUwft83IChhhM7k7e3m8hfSl1l5FvwFs",
+  authDomain: "prayer-binder-c16c6.firebaseapp.com",
+  projectId: "prayer-binder-c16c6",
+  storageBucket: "prayer-binder-c16c6.firebasestorage.app",
+  messagingSenderId: "641216933558",
+  appId: "1:641216933558:web:100945f00fd7eb92f84017"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
 
 const PALETTE = ['#C0725A','#5A8C6A','#4A6E9C','#8A5A9C','#9C7A3A','#3A8C8C','#7A6C9C','#7A9C5A'];
-function uid(){ return Date.now() + Math.random().toString(36).slice(2,6); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function today(){ return new Date().toISOString().slice(0,10); }
 
 let tabs=[], items=[], binderTitle='✦ 나의 기도 바인더 ✦';
 let curTabId='', curSubId='';
 let memoItemId=null, ctxL1TabId=null, ctxL2SubId=null, deleteTarget=null, longTimer=null;
 let currentUser=null;
-
 function curTab(){ return tabs.find(t=>t.id===curTabId); }
 
-// ── LOADING ──
+// ── UI ──
 function showLoading(){ document.getElementById('loading-screen').classList.remove('hidden'); }
 function hideLoading(){ document.getElementById('loading-screen').classList.add('hidden'); }
-
-// ── AUTH UI ──
-function showAuth(){ document.getElementById('auth-screen').style.display='flex'; }
-function showApp(){
+function showAuth(){ document.getElementById('auth-screen').style.display='flex'; document.getElementById('app-screen').classList.remove('visible'); }
+function showApp(u){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app-screen').classList.add('visible');
-  document.getElementById('user-email-display').textContent = currentUser?.email || '';
-}
-function switchAuthTab(t){
-  document.getElementById('auth-login-form').style.display  = t==='login'  ? '' : 'none';
-  document.getElementById('auth-signup-form').style.display = t==='signup' ? '' : 'none';
-  document.getElementById('auth-reset-form').style.display  = t==='reset'  ? '' : 'none';
-  document.getElementById('tab-login').classList.toggle('active',  t==='login');
-  document.getElementById('tab-signup').classList.toggle('active', t==='signup');
-  // 비밀번호 찾기일 때 탭바 숨기기
-  document.getElementById('auth-tab-bar').style.display = t==='reset' ? 'none' : '';
+  if(u.photoURL){ const av=document.getElementById('user-avatar'); av.src=u.photoURL; av.style.display=''; }
+  document.getElementById('user-name').textContent = u.displayName || u.email;
 }
 
+// ── AUTH TAB ──
+window.switchTab = function(t){
+  ['login','signup','reset'].forEach(k=>{
+    document.getElementById('form-'+k).style.display = k===t?'':'none';
+  });
+  document.getElementById('tab-login').classList.toggle('active', t==='login');
+  document.getElementById('tab-signup').classList.toggle('active', t==='signup');
+  document.querySelector('.auth-tabs').style.display = t==='reset'?'none':'';
+};
+
 // ── AUTH ACTIONS ──
-async function doLogin(){
+window.doGoogleLogin = async function(){
+  try{ await signInWithPopup(auth, googleProvider); }
+  catch(e){ console.error(e); }
+};
+window.doEmailLogin = async function(){
   const email=document.getElementById('login-email').value.trim();
   const pw=document.getElementById('login-pw').value;
   const msg=document.getElementById('login-msg');
   msg.textContent='로그인 중...'; msg.className='auth-msg';
-  const {error}=await sb.auth.signInWithPassword({email,password:pw});
-  if(error){ msg.textContent=error.message; msg.className='auth-msg error'; }
-  else{ msg.textContent=''; }
-}
-async function doSignup(){
+  try{
+    await signInWithEmailAndPassword(auth,email,pw);
+    msg.textContent='';
+  }catch(e){
+    msg.textContent='이메일 또는 비밀번호가 올바르지 않아요.'; msg.className='auth-msg error';
+  }
+};
+window.doSignup = async function(){
   const email=document.getElementById('signup-email').value.trim();
   const pw=document.getElementById('signup-pw').value;
   const pw2=document.getElementById('signup-pw2').value;
@@ -511,112 +442,100 @@ async function doSignup(){
   if(pw.length<6){ msg.textContent='비밀번호는 6자 이상이어야 해요.'; msg.className='auth-msg error'; return; }
   if(pw!==pw2){ msg.textContent='비밀번호가 일치하지 않아요.'; msg.className='auth-msg error'; return; }
   msg.textContent='가입 중...'; msg.className='auth-msg';
-  const {error}=await sb.auth.signUp({email,password:pw});
-  if(error){ msg.textContent=error.message; msg.className='auth-msg error'; }
-  else{ msg.textContent='✅ 가입 완료! 이메일을 확인해주세요.'; msg.className='auth-msg success'; }
-}
-async function doReset(){
+  try{
+    await createUserWithEmailAndPassword(auth,email,pw);
+    msg.textContent='';
+  }catch(e){
+    msg.textContent=e.code==='auth/email-already-in-use'?'이미 사용 중인 이메일이에요.':e.message;
+    msg.className='auth-msg error';
+  }
+};
+window.doReset = async function(){
   const email=document.getElementById('reset-email').value.trim();
   const msg=document.getElementById('reset-msg');
   if(!email){ msg.textContent='이메일을 입력해주세요.'; msg.className='auth-msg error'; return; }
   msg.textContent='전송 중...'; msg.className='auth-msg';
-  const {error}=await sb.auth.resetPasswordForEmail(email,{
-    redirectTo: window.location.origin+window.location.pathname
-  });
-  if(error){ msg.textContent=error.message; msg.className='auth-msg error'; }
-  else{ msg.textContent='✅ 재설정 메일을 보냈어요! 이메일을 확인해주세요.'; msg.className='auth-msg success'; }
-}
-async function doLogout(){
-  await sb.auth.signOut();
+  try{
+    await sendPasswordResetEmail(auth,email);
+    msg.textContent='✅ 재설정 메일을 보냈어요! 이메일을 확인해주세요.'; msg.className='auth-msg success';
+  }catch(e){
+    msg.textContent='등록되지 않은 이메일이에요.'; msg.className='auth-msg error';
+  }
+};
+window.doLogout = async function(){
+  await signOut(auth);
   tabs=[]; items=[]; curTabId=''; curSubId='';
-  document.getElementById('app-screen').classList.remove('visible');
-  showAuth();
-}
+};
 
-// ── SUPABASE DATA ──
+// ── FIRESTORE ──
+function userRef(){ return doc(db,'users',currentUser.uid); }
+function tabsRef(){ return collection(db,'users',currentUser.uid,'tabs'); }
+function itemsRef(){ return collection(db,'users',currentUser.uid,'items'); }
+
 async function loadData(){
-  const uid=currentUser.id;
-  const [t1,t2]=await Promise.all([
-    sb.from('pb_tabs').select('*').eq('user_id',uid).order('sort_order'),
-    sb.from('pb_items').select('*').eq('user_id',uid).order('created_at')
+  const udoc = await getDoc(userRef());
+  if(udoc.exists()) binderTitle = udoc.data().binderTitle || '✦ 나의 기도 바인더 ✦';
+
+  const [tSnap, iSnap] = await Promise.all([
+    getDocs(query(tabsRef(), orderBy('sortOrder'))),
+    getDocs(query(itemsRef(), orderBy('createdAt')))
   ]);
-  const rawTabs=t1.data||[];
-  const rawItems=t2.data||[];
-  // 탭 구조 재구성
+
+  const rawTabs = tSnap.docs.map(d=>({id:d.id,...d.data()}));
+  const rawItems = iSnap.docs.map(d=>({id:d.id,...d.data()}));
+
   const tabMap={};
-  rawTabs.filter(r=>!r.parent_id).forEach(r=>{
+  rawTabs.filter(r=>!r.parentId).sort((a,b)=>a.sortOrder-b.sortOrder).forEach(r=>{
     tabMap[r.id]={id:r.id,name:r.name,color:r.color||PALETTE[0],subs:[]};
   });
-  rawTabs.filter(r=>r.parent_id).forEach(r=>{
-    if(tabMap[r.parent_id]) tabMap[r.parent_id].subs.push({id:r.id,name:r.name});
+  rawTabs.filter(r=>r.parentId).sort((a,b)=>a.sortOrder-b.sortOrder).forEach(r=>{
+    if(tabMap[r.parentId]) tabMap[r.parentId].subs.push({id:r.id,name:r.name});
   });
   tabs=Object.values(tabMap);
   items=rawItems.map(r=>({
-    id:r.id, tabId:r.tab_id, subId:r.sub_id, title:r.title,
-    memo:r.memo||'', date:r.date||today(),
-    answered:r.answered||false, answeredAt:r.answered_at||null
+    id:r.id,tabId:r.tabId,subId:r.subId,title:r.title,
+    memo:r.memo||'',date:r.date||today(),
+    answered:r.answered||false,answeredAt:r.answeredAt||null
   }));
-  binderTitle=currentUser.user_metadata?.binder_title||'✦ 나의 기도 바인더 ✦';
-  curTabId=tabs[0]?.id||'';
-  curSubId=tabs[0]?.subs[0]?.id||'';
+  curTabId=tabs[0]?.id||''; curSubId=tabs[0]?.subs[0]?.id||'';
 }
 
-async function saveTabToDb(tab, parentId=null, sortOrder=0){
-  const uid=currentUser.id;
-  await sb.from('pb_tabs').upsert({id:tab.id,user_id:uid,name:tab.name,
-    color:tab.color||null,parent_id:parentId,sort_order:sortOrder});
-  for(let i=0;i<(tab.subs||[]).length;i++){
-    await sb.from('pb_tabs').upsert({id:tab.subs[i].id,user_id:uid,
-      name:tab.subs[i].name,parent_id:tab.id,sort_order:i});
-  }
-}
-async function deleteTabFromDb(tabId){
-  await sb.from('pb_tabs').delete().eq('id',tabId);
-}
-async function saveItemToDb(item){
-  const uid=currentUser.id;
-  await sb.from('pb_items').upsert({
-    id:item.id, user_id:uid, tab_id:item.tabId, sub_id:item.subId,
-    title:item.title, memo:item.memo, date:item.date,
-    answered:item.answered, answered_at:item.answeredAt
+async function saveUserMeta(){ await setDoc(userRef(),{binderTitle},{merge:true}); }
+async function upsertTab(id,data){ await setDoc(doc(tabsRef(),id),data,{merge:true}); }
+async function removeTab(id){ await deleteDoc(doc(tabsRef(),id)); }
+async function upsertItem(item){
+  await setDoc(doc(itemsRef(),item.id),{
+    tabId:item.tabId,subId:item.subId,title:item.title,memo:item.memo,
+    date:item.date,answered:item.answered,answeredAt:item.answeredAt,
+    createdAt:item.createdAt||Date.now()
   });
 }
-async function deleteItemFromDb(itemId){
-  await sb.from('pb_items').delete().eq('id',itemId);
-}
-async function saveBinderTitle(t){
-  await sb.auth.updateUser({data:{binder_title:t}});
-}
+async function removeItem(id){ await deleteDoc(doc(itemsRef(),id)); }
 
 // ── MODAL HELPERS ──
-function openModal(key){
+window.openModal = function(key){
   document.getElementById('ov-'+key).classList.add('open');
   const inp=document.getElementById('inp-'+key);
   if(inp) setTimeout(()=>{inp.focus();inp.select();},80);
-}
-function closeModal(key){ document.getElementById('ov-'+key).classList.remove('open'); }
+};
+window.closeModal = function(key){ document.getElementById('ov-'+key).classList.remove('open'); };
 
 // ── TITLE ──
-function saveTitle(){
-  const v=document.getElementById('inp-title').value.trim();
-  if(!v) return;
-  binderTitle=v;
-  document.getElementById('binder-title-el').textContent=binderTitle;
-  saveBinderTitle(binderTitle);
-  closeModal('title-edit');
-}
+window.saveTitle = async function(){
+  const v=document.getElementById('inp-title').value.trim(); if(!v) return;
+  binderTitle=v; document.getElementById('binder-title-el').textContent=binderTitle;
+  await saveUserMeta(); closeModal('title-edit');
+};
 document.getElementById('binder-title-el').onclick=()=>{
-  document.getElementById('inp-title').value=binderTitle;
-  openModal('title-edit');
+  document.getElementById('inp-title').value=binderTitle; openModal('title-edit');
 };
 
 // ── LONG PRESS ──
-function startLong(e,fn){ cancelLong(); longTimer=setTimeout(()=>fn(e),600); }
-function cancelLong(){ if(longTimer){clearTimeout(longTimer);longTimer=null;} }
+window.startLong=function(e,fn){ cancelLong(); longTimer=setTimeout(()=>fn(e),600); };
+window.cancelLong=function(){ if(longTimer){clearTimeout(longTimer);longTimer=null;} };
 function showCtx(menuId,e){
   const menu=document.getElementById(menuId);
-  menu.classList.add('open');
-  menu.style.visibility='hidden'; menu.style.left='0'; menu.style.top='0';
+  menu.classList.add('open'); menu.style.visibility='hidden'; menu.style.left='0'; menu.style.top='0';
   requestAnimationFrame(()=>{
     const mh=menu.offsetHeight,mw=menu.offsetWidth;
     const cx=e.clientX||(e.touches&&e.touches[0]?.clientX)||100;
@@ -627,58 +546,55 @@ function showCtx(menuId,e){
   });
 }
 function closeCtx(id){ document.getElementById(id).classList.remove('open'); }
-function longL1(e,tabId){ ctxL1TabId=tabId; showCtx('ctx-l1',e); }
-function longL2(e,subId){ ctxL2SubId=subId; showCtx('ctx-l2',e); }
+window.longL1=function(e,tabId){ ctxL1TabId=tabId; showCtx('ctx-l1',e); };
+window.longL2=function(e,subId){ ctxL2SubId=subId; showCtx('ctx-l2',e); };
 
 // ── L1 ADD ──
-function openL1Add(){ document.getElementById('inp-l1-add').value=''; document.getElementById('err-l1-add').textContent=''; openModal('l1-add'); }
-async function confirmL1Add(){
-  const v=document.getElementById('inp-l1-add').value.trim();
-  if(!v) return;
+window.openL1Add=function(){ document.getElementById('inp-l1-add').value=''; document.getElementById('err-l1-add').textContent=''; openModal('l1-add'); };
+window.confirmL1Add=async function(){
+  const v=document.getElementById('inp-l1-add').value.trim(); if(!v) return;
   if(tabs.find(t=>t.name===v)){ document.getElementById('err-l1-add').textContent='이미 있는 이름입니다.'; return; }
-  const newTab={id:uid(),name:v,color:PALETTE[tabs.length%PALETTE.length],subs:[{id:uid(),name:'전체'}]};
-  tabs.push(newTab);
-  curTabId=newTab.id; curSubId=newTab.subs[0].id;
+  const id=uid();
+  const subId=uid();
+  const newTab={id,name:v,color:PALETTE[tabs.length%PALETTE.length],subs:[{id:subId,name:'전체'}]};
+  tabs.push(newTab); curTabId=id; curSubId=subId;
   closeModal('l1-add');
-  await saveTabToDb(newTab,null,tabs.length-1);
+  await upsertTab(id,{name:v,color:newTab.color,parentId:null,sortOrder:tabs.length-1});
+  await upsertTab(subId,{name:'전체',parentId:id,sortOrder:0});
   render();
-}
+};
 
 // ── L1 RENAME ──
-function openL1Rename(){ closeCtx('ctx-l1'); const t=tabs.find(t=>t.id===ctxL1TabId); if(!t) return; document.getElementById('inp-l1-rename').value=t.name; openModal('l1-rename'); }
-async function confirmL1Rename(){
+window.openL1Rename=function(){ closeCtx('ctx-l1'); const t=tabs.find(t=>t.id===ctxL1TabId); if(!t) return; document.getElementById('inp-l1-rename').value=t.name; openModal('l1-rename'); };
+window.confirmL1Rename=async function(){
   const v=document.getElementById('inp-l1-rename').value.trim(); if(!v) return;
   const t=tabs.find(t=>t.id===ctxL1TabId); if(!t) return;
-  t.name=v;
-  await sb.from('pb_tabs').update({name:v}).eq('id',t.id);
-  closeModal('l1-rename'); render();
-}
+  t.name=v; await upsertTab(t.id,{name:v}); closeModal('l1-rename'); render();
+};
 
 // ── L2 ADD ──
-function openL2Add(){ document.getElementById('inp-l2-add').value=''; document.getElementById('err-l2-add').textContent=''; openModal('l2-add'); }
-async function confirmL2Add(){
+window.openL2Add=function(){ document.getElementById('inp-l2-add').value=''; document.getElementById('err-l2-add').textContent=''; openModal('l2-add'); };
+window.confirmL2Add=async function(){
   const v=document.getElementById('inp-l2-add').value.trim(); if(!v) return;
   const t=curTab(); if(!t) return;
   if(t.subs.find(s=>s.name===v)){ document.getElementById('err-l2-add').textContent='이미 있는 이름입니다.'; return; }
-  const ns={id:uid(),name:v};
-  t.subs.push(ns); curSubId=ns.id;
+  const id=uid();
+  const ns={id,name:v}; t.subs.push(ns); curSubId=id;
   closeModal('l2-add');
-  await sb.from('pb_tabs').upsert({id:ns.id,user_id:currentUser.id,name:ns.name,parent_id:t.id,sort_order:t.subs.length-1});
+  await upsertTab(id,{name:v,parentId:t.id,sortOrder:t.subs.length-1});
   render();
-}
+};
 
 // ── L2 RENAME ──
-function openL2Rename(){ closeCtx('ctx-l2'); const t=curTab(); const s=t?.subs.find(s=>s.id===ctxL2SubId); if(!s) return; document.getElementById('inp-l2-rename').value=s.name; openModal('l2-rename'); }
-async function confirmL2Rename(){
+window.openL2Rename=function(){ closeCtx('ctx-l2'); const t=curTab(); const s=t?.subs.find(s=>s.id===ctxL2SubId); if(!s) return; document.getElementById('inp-l2-rename').value=s.name; openModal('l2-rename'); };
+window.confirmL2Rename=async function(){
   const v=document.getElementById('inp-l2-rename').value.trim(); if(!v) return;
   const t=curTab(); const s=t?.subs.find(s=>s.id===ctxL2SubId); if(!s) return;
-  s.name=v;
-  await sb.from('pb_tabs').update({name:v}).eq('id',s.id);
-  closeModal('l2-rename'); render();
-}
+  s.name=v; await upsertTab(s.id,{name:v}); closeModal('l2-rename'); render();
+};
 
 // ── DELETE ──
-function openDeleteConfirm(type){
+window.openDeleteConfirm=function(type){
   closeCtx('ctx-l1'); closeCtx('ctx-l2');
   if(type==='l1'){
     const t=tabs.find(t=>t.id===ctxL1TabId); if(!t) return;
@@ -694,19 +610,19 @@ function openDeleteConfirm(type){
     deleteTarget={type:'l2',tabId:curTabId,subId:ctxL2SubId};
   }
   openModal('delete');
-}
-async function execDelete(){
+};
+window.execDelete=async function(){
   if(!deleteTarget){ closeModal('delete'); return; }
   if(deleteTarget.type==='l1'){
     const idx=tabs.findIndex(t=>t.id===deleteTarget.tabId);
     if(idx>-1){
       const t=tabs[idx];
-      // DB 삭제
-      const subIds=t.subs.map(s=>s.id);
-      await sb.from('pb_items').delete().in('sub_id',subIds.length?subIds:['__none__']);
-      await sb.from('pb_items').delete().eq('tab_id',deleteTarget.tabId);
-      for(const s of t.subs) await sb.from('pb_tabs').delete().eq('id',s.id);
-      await sb.from('pb_tabs').delete().eq('id',deleteTarget.tabId);
+      const delItems=items.filter(i=>i.tabId===deleteTarget.tabId);
+      await Promise.all([
+        ...t.subs.map(s=>removeTab(s.id)),
+        removeTab(deleteTarget.tabId),
+        ...delItems.map(i=>removeItem(i.id))
+      ]);
       tabs.splice(idx,1);
       items=items.filter(i=>i.tabId!==deleteTarget.tabId);
       curTabId=tabs[Math.max(0,idx-1)]?.id||tabs[0]?.id||'';
@@ -717,8 +633,8 @@ async function execDelete(){
     if(t){
       const idx=t.subs.findIndex(s=>s.id===deleteTarget.subId);
       if(idx>-1){
-        await sb.from('pb_items').delete().eq('sub_id',deleteTarget.subId);
-        await sb.from('pb_tabs').delete().eq('id',deleteTarget.subId);
+        const delItems=items.filter(i=>i.subId===deleteTarget.subId);
+        await Promise.all([removeTab(deleteTarget.subId),...delItems.map(i=>removeItem(i.id))]);
         t.subs.splice(idx,1);
         items=items.filter(i=>i.subId!==deleteTarget.subId);
         curSubId=t.subs[Math.max(0,idx-1)]?.id||t.subs[0]?.id||'';
@@ -726,68 +642,56 @@ async function execDelete(){
     }
   }
   deleteTarget=null; closeModal('delete'); render();
-}
+};
 
 // ── ENTRIES ──
-async function addEntry(){
+window.addEntry=async function(){
   const inp=document.getElementById('add-input');
-  const title=inp.value.trim();
-  if(!title||!curTabId||!curSubId) return;
-  const item={id:uid(),tabId:curTabId,subId:curSubId,title,memo:'',date:today(),answered:false,answeredAt:null};
-  items.push(item); inp.value='';
-  renderEntries();
-  await saveItemToDb(item);
-}
-async function toggleAnswered(id){
+  const title=inp.value.trim(); if(!title||!curTabId||!curSubId) return;
+  const item={id:uid(),tabId:curTabId,subId:curSubId,title,memo:'',date:today(),answered:false,answeredAt:null,createdAt:Date.now()};
+  items.push(item); inp.value=''; renderEntries();
+  await upsertItem(item);
+};
+window.toggleAnswered=async function(id){
   const item=items.find(i=>i.id===id); if(!item) return;
   item.answered=!item.answered; item.answeredAt=item.answered?today():null;
-  renderEntries();
-  await saveItemToDb(item);
-}
-async function deleteItem(id){
+  renderEntries(); await upsertItem(item);
+};
+window.deleteItem=async function(id){
   if(!confirm('이 기도제목을 삭제할까요?')) return;
-  items=items.filter(i=>i.id!==id);
-  renderEntries();
-  await deleteItemFromDb(id);
-}
-function openMemo(id){
-  memoItemId=id;
-  const item=items.find(i=>i.id===id);
+  items=items.filter(i=>i.id!==id); renderEntries(); await removeItem(id);
+};
+window.openMemo=function(id){
+  memoItemId=id; const item=items.find(i=>i.id===id);
   document.getElementById('memo-label').textContent=item.title;
   document.getElementById('memo-ta').value=item.memo||'';
-  openModal('memo');
-  setTimeout(()=>document.getElementById('memo-ta').focus(),80);
-}
-async function saveMemo(){
+  openModal('memo'); setTimeout(()=>document.getElementById('memo-ta').focus(),80);
+};
+window.saveMemo=async function(){
   const item=items.find(i=>i.id===memoItemId);
-  if(item){ item.memo=document.getElementById('memo-ta').value.trim(); renderEntries(); await saveItemToDb(item); }
+  if(item){ item.memo=document.getElementById('memo-ta').value.trim(); renderEntries(); await upsertItem(item); }
   closeModal('memo');
-}
+};
 
 // ── RENDER ──
 function renderL1Tabs(){
   const el=document.getElementById('tabs-l1');
-  if(!tabs.length){
-    el.innerHTML='<button class="tab-l1 tab-add" onclick="openL1Add()">＋ 탭 추가</button>';
-    return;
-  }
-  el.innerHTML=tabs.map((t,i)=>{
-    const esc=t.name.replace(/'/g,"\\'");
-    return `<button class="tab-l1 ${t.id===curTabId?'active':''}" style="background:${t.color}"
-      onclick="switchL1('${t.id}')"
-      onmousedown="startLong(event,(e)=>longL1(e,'${t.id}'))"
-      onmouseup="cancelLong()" onmouseleave="cancelLong()"
-      ontouchstart="startLong(event,(e)=>longL1(e,'${t.id}'))"
-      ontouchend="cancelLong()">${t.name}</button>`;
-  }).join('')+`<button class="tab-l1 tab-add" onclick="openL1Add()">＋</button>`;
+  if(!tabs.length){ el.innerHTML='<button class="tab-l1 tab-add" onclick="openL1Add()">＋ 탭 추가</button>'; return; }
+  el.innerHTML=tabs.map(t=>`<button class="tab-l1 ${t.id===curTabId?'active':''}" style="background:${t.color}"
+    onclick="switchL1('${t.id}')"
+    onmousedown="startLong(event,(e)=>longL1(e,'${t.id}'))"
+    onmouseup="cancelLong()" onmouseleave="cancelLong()"
+    ontouchstart="startLong(event,(e)=>longL1(e,'${t.id}'))"
+    ontouchend="cancelLong()">${t.name}</button>`).join('')
+    +`<button class="tab-l1 tab-add" onclick="openL1Add()">＋</button>`;
 }
 function renderL2Tabs(){
   const t=curTab(); const el=document.getElementById('tabs-l2');
   if(!t){ el.innerHTML=''; return; }
   el.innerHTML=t.subs.map(s=>{
-    const active=s.id===curSubId;
-    return `<button class="tab-l2 ${active?'active':''}"
-      style="${active?'background:'+t.color+';border-color:'+t.color+';color:#fff':''}"
+    const a=s.id===curSubId;
+    return `<button class="tab-l2 ${a?'active':''}"
+      style="${a?'background:'+t.color+';border-color:'+t.color+';color:#fff':''}"
       onclick="switchL2('${s.id}')"
       onmousedown="startLong(event,(e)=>longL2(e,'${s.id}'))"
       onmouseup="cancelLong()" onmouseleave="cancelLong()"
@@ -796,34 +700,32 @@ function renderL2Tabs(){
   }).join('')+`<button class="tab-l2 tab-l2-add" onclick="openL2Add()">＋ 소탭</button>`;
 }
 function renderEntries(){
-  const t=curTab(); const mainColor=t?t.color:'#888';
-  const subItems=items.filter(i=>i.tabId===curTabId&&i.subId===curSubId);
-  const answered=subItems.filter(i=>i.answered).length;
-  const allTab=items.filter(i=>i.tabId===curTabId);
+  const t=curTab(); const mc=t?t.color:'#888';
+  const sub=items.filter(i=>i.tabId===curTabId&&i.subId===curSubId);
+  const ans=sub.filter(i=>i.answered).length;
+  const all=items.filter(i=>i.tabId===curTabId);
   document.getElementById('page-cat-label').textContent=t?.name||'';
-  document.getElementById('page-cat-label').style.color=mainColor;
-  document.getElementById('page-meta').textContent=allTab.length+'개 · 응답 '+allTab.filter(i=>i.answered).length+'개';
+  document.getElementById('page-cat-label').style.color=mc;
+  document.getElementById('page-meta').textContent=all.length+'개 · 응답 '+all.filter(i=>i.answered).length+'개';
   const now=new Date();
   document.getElementById('page-date').textContent=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0');
   const list=document.getElementById('entry-list');
   if(!tabs.length){
     list.innerHTML='<div style="padding:40px 0;text-align:center;color:var(--ink3);font-size:13px;line-height:2">🙏<br>상단 <b>＋ 탭 추가</b>를 눌러<br>첫 번째 기도 카테고리를 만들어보세요</div>';
-    document.getElementById('answered-count').textContent='';
-    document.getElementById('add-btn').style.background='#8A8070';
-    return;
+    document.getElementById('answered-count').textContent=''; document.getElementById('add-btn').style.background='#8A8070'; return;
   }
-  if(!subItems.length){
+  if(!sub.length){
     list.innerHTML='<div style="padding:20px 0;text-align:center;color:var(--ink3);font-size:13px">아직 기도제목이 없습니다<br><span style="font-size:11px;opacity:.6">아래에 추가해보세요</span></div>';
   } else {
-    const sorted=[...subItems].sort((a,b)=>{
+    const sorted=[...sub].sort((a,b)=>{
       if(a.answered!==b.answered) return a.answered?1:-1;
       if(a.answered&&b.answered) return (b.answeredAt||b.date)>(a.answeredAt||a.date)?1:-1;
-      return b.id>a.id?-1:1;
+      return (b.createdAt||0)-(a.createdAt||0);
     });
     list.innerHTML=sorted.map(item=>`
       <div class="entry ${item.answered?'answered':''}">
         <div class="entry-check" onclick="toggleAnswered('${item.id}')"
-          style="${item.answered?'background:'+mainColor+';border-color:'+mainColor+';color:#fff':''}">
+          style="${item.answered?'background:'+mc+';border-color:'+mc+';color:#fff':''}">
           ${item.answered?'✓':''}
         </div>
         <div class="entry-body">
@@ -837,45 +739,43 @@ function renderEntries(){
         </div>
       </div>`).join('');
   }
-  document.getElementById('answered-count').innerHTML='응답됨 <span style="color:'+mainColor+'">'+answered+'</span> / '+subItems.length;
-  document.getElementById('add-btn').style.background=mainColor;
+  document.getElementById('answered-count').innerHTML='응답됨 <span style="color:'+mc+'">'+ans+'</span> / '+sub.length;
+  document.getElementById('add-btn').style.background=mc;
   document.getElementById('stat-answered').textContent=items.filter(i=>i.answered).length;
   document.getElementById('stat-active').textContent=items.filter(i=>!i.answered).length;
 }
 function render(){ renderL1Tabs(); renderL2Tabs(); renderEntries(); }
-function switchL1(tabId){ curTabId=tabId; curSubId=tabs.find(t=>t.id===tabId)?.subs[0]?.id||''; render(); }
-function switchL2(subId){ curSubId=subId; renderL2Tabs(); renderEntries(); }
+window.switchL1=function(id){ curTabId=id; curSubId=tabs.find(t=>t.id===id)?.subs[0]?.id||''; render(); };
+window.switchL2=function(id){ curSubId=id; renderL2Tabs(); renderEntries(); };
 
 // ── KEYBOARD ──
 document.getElementById('add-input').addEventListener('keydown',e=>{ if(e.key==='Enter') addEntry(); });
-[['title-edit',saveTitle],['l1-add',confirmL1Add],['l1-rename',confirmL1Rename],
- ['l2-add',confirmL2Add],['l2-rename',confirmL2Rename]].forEach(([key,fn])=>{
+[['title-edit',()=>saveTitle()],['l1-add',()=>confirmL1Add()],['l1-rename',()=>confirmL1Rename()],
+ ['l2-add',()=>confirmL2Add()],['l2-rename',()=>confirmL2Rename()]].forEach(([key,fn])=>{
   const inp=document.getElementById('inp-'+key);
   if(inp) inp.addEventListener('keydown',e=>{ if(e.key==='Enter') fn(); if(e.key==='Escape') closeModal(key); });
   const ov=document.getElementById('ov-'+key);
   if(ov) ov.addEventListener('click',e=>{ if(e.target===ov) closeModal(key); });
 });
-document.getElementById('ov-delete').addEventListener('click',e=>{ if(e.target===document.getElementById('ov-delete')) closeModal('delete'); });
-document.getElementById('ov-memo').addEventListener('click',e=>{ if(e.target===document.getElementById('ov-memo')) closeModal('memo'); });
+['ov-delete','ov-memo'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{ if(e.target===document.getElementById(id)) closeModal(id.replace('ov-','')); });
+});
 document.addEventListener('click',e=>{
   ['ctx-l1','ctx-l2'].forEach(id=>{ const m=document.getElementById(id); if(m.classList.contains('open')&&!m.contains(e.target)) closeCtx(id); });
 });
-document.getElementById('login-email').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-document.getElementById('login-pw').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-document.getElementById('signup-email').addEventListener('keydown',e=>{ if(e.key==='Enter') doSignup(); });
-document.getElementById('signup-pw').addEventListener('keydown',e=>{ if(e.key==='Enter') doSignup(); });
+document.getElementById('login-pw').addEventListener('keydown',e=>{ if(e.key==='Enter') doEmailLogin(); });
 document.getElementById('signup-pw2').addEventListener('keydown',e=>{ if(e.key==='Enter') doSignup(); });
 document.getElementById('reset-email').addEventListener('keydown',e=>{ if(e.key==='Enter') doReset(); });
 
-// ── INIT ──
-sb.auth.onAuthStateChange(async(event, session)=>{
-  if(session?.user){
-    currentUser=session.user;
+// ── AUTH STATE ──
+onAuthStateChanged(auth, async user=>{
+  if(user){
+    currentUser=user;
     showLoading();
     await loadData();
     hideLoading();
     document.getElementById('binder-title-el').textContent=binderTitle;
-    showApp();
+    showApp(user);
     render();
   } else {
     currentUser=null;
